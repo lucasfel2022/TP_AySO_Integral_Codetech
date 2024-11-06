@@ -1,0 +1,26 @@
+Vagrant.configure("2") do |config|
+  config.vm.define "Testing" do |ubuntu|
+    ubuntu.vm.box = "ubuntu/focal64"
+    ubuntu.vm.network "private_network", ip: "192.168.56.10"
+    ubuntu.vm.provider "virtualbox" do |vb|
+      vb.name = "Testing"
+      vb.memory = "1024"
+    end
+    ubuntu.vm.provision "shell", inline: <<-SHELL
+      # Aquí puedes incluir scripts para configurar Ubuntu
+    SHELL
+  end
+  
+  config.vm.define "Produccion" do |fedora|
+    fedora.vm.box = "generic/fedora28"
+    fedora.vm.network "private_network", ip: "192.168.56.11"
+    fedora.vm.provider "virtualbox" do |vb|
+      vb.name = "Produccion"
+      vb.memory = "1024"
+    end
+    fedora.vm.provision "shell", inline: <<-SHELL
+      # Aquí puedes incluir scripts para configurar Fedora
+    SHELL
+  end
+end
+

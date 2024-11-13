@@ -1,48 +1,74 @@
-#!/bin/bash
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
 Vagrant.configure("2") do |config|
-  config.vm.define "Testing" do |ubuntu|
-    ubuntu.vm.box = "ubuntu/focal64"
-    ubuntu.vm.network "private_network", ip: "192.168.56.10"
-    ubuntu.vm.provider "virtualbox" do |vb|
-      vb.name = "Testing"
+
+  # Configuración de la máquina "Testing" con Ubuntu
+  config.vm.define "Testing" do |testing|
+    testing.vm.box = "ubuntu/jammy64"
+    testing.vm.hostname = "Testing"
+    testing.vm.network "private_network", ip: "192.168.56.4"
+    
+    # Carpeta compartida
+    testing.vm.synced_folder './compartido_Testing/', '/home/vagrant/compartido', 
+      owner: 'vagrant', group: 'vagrant' 
+
+    # SSH key privada
+    testing.ssh.insert_key = true
+
+    # Agregar discos
+    testing.vm.disk :disk, size: "10GB", name: "#{testing.vm.hostname}_extra_storage"
+    testing.vm.disk :disk, size: "5GB", name: "#{testing.vm.hostname}_extra_storage2"
+    testing.vm.disk :disk, size: "2GB", name: "#{testing.vm.hostname}_extra_storage3"
+
+    # Configuración del proveedor VirtualBox
+    testing.vm.provider "virtualbox" do |vb|
       vb.memory = "1024"
+      vb.name = "Testing"
+      vb.cpus = 1
+      vb.linked_clone = true
+      vb.customize ['modifyvm', :id, '--graphicscontroller', 'vmsvga']      
+    end    
 
-      # Añadir discos a la máquina Ubuntu
-      vb.customize ['createhd', '--filename', 'testing_disk1.vdi', '--size', 5120] # 5GB
-      vb.customize ['createhd', '--filename', 'testing_disk2.vdi', '--size', 3072] # 3GB
-      vb.customize ['createhd', '--filename', 'testing_disk3.vdi', '--size', 2048] # 2GB
-      vb.customize ['createhd', '--filename', 'testing_disk4.vdi', '--size', 1024] # 1GB
-
-      # Conectar los discos a la controladora de almacenamiento
-      (1..4).each do |i|
-        vb.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', i, '--device', 0, '--type', 'hdd', '--medium', "testing_disk#{i}.vdi"]
-      end
-    end
-    ubuntu.vm.provision "shell", inline: <<-SHELL
-      # Aquí puedes incluir scripts para configurar Ubuntu
+    # Provisión de scripts
+    testing.vm.provision "shell", path: "./script_Enable_ssh_password.sh"
+    testing.vm.provision "shell", path: "./instala_paquetes.sh"
+    testing.vm.provision "shell", privileged: false, inline: <<-SHELL
+      mkdir -p /home/vagrant/repogit
+      cd /home/vagrant/repogit
+      git clone https://github.com/upszot/UTN-FRA_SO_onBording.git 
+      git clone https://github.com/upszot/UTN-FRA_SO_Ansible.git
+      git clone https://github.com/upszot/UTN-FRA_SO_Docker.git
     SHELL
   end
+  
+  # Configuración de la máquina "Produccion" con Fedora
+  config.vm.define "Produccion" do |produccion|
+    produccion.vm.box = "generic/rhel9"
+    produccion.vm.hostname = "Produccion"
+    produccion.vm.network "private_network", ip: "192.168.56.5"
+    
+    # Carpeta compartida
+    #produccion.vm.synced_folder './compartido_Produccion/', '/home/vagrant/compartido'
 
-  config.vm.define "Produccion" do |fedora|
-    fedora.vm.box = "generic/fedora28"
-    fedora.vm.network "private_network", ip: "192.168.56.11"
-    fedora.vm.provider "virtualbox" do |vb|
-      vb.name = "Produccion"
+    # SSH key privada
+    produccion.ssh.insert_key = true
+
+    # Configuración del proveedor VirtualBox
+    produccion.vm.provider "virtualbox" do |vb|
       vb.memory = "1024"
-
-      # Añadir discos a la máquina Fedora
-      vb.customize ['createhd', '--filename', 'produccion_disk1.vdi', '--size', 5120] # 5GB
-      vb.customize ['createhd', '--filename', 'produccion_disk2.vdi', '--size', 3072] # 3GB
-      vb.customize ['createhd', '--filename', 'produccion_disk3.vdi', '--size', 2048] # 2GB
-      vb.customize ['createhd', '--filename', 'produccion_disk4.vdi', '--size', 1024] # 1GB
-
-      # Conectar los discos a la controladora de almacenamiento
-      (1..4).each do |i|
-        vb.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', i, '--device', 0, '--type', 'hdd', '--medium', "produccion_disk#{i}.vdi"]
-      end
+      vb.name = "Produccion"
+      vb.cpus = 1
+      vb.linked_clone = true
+      vb.customize ['modifyvm', :id, '--graphicscontroller', 'vmsvga']
     end
-    fedora.vm.provision "shell", inline: <<-SHELL
-      # Aquí puedes incluir scripts para configurar Fedora
+    
+    # Provisión de scripts
+    produccion.vm.provision "shell", path: "./script_Enable_ssh_password.sh"
+    produccion.vm.provision "shell", inline: <<-SHELL
+      dnf install -y /home/vagrant/compartido/tree-1.8.0-10.el9.x86_64.rpm
+      subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms
+      dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
     SHELL
   end
 end

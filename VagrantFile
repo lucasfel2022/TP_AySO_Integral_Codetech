@@ -1,57 +1,79 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
 Vagrant.configure("2") do |config|
 
-  # Configuración de la máquina 'Testing'
-  config.vm.define "Testing" do |vmTesting|
-    vmTesting.vm.box = "ubuntu/jammy64"  # Usa la caja de Ubuntu
-    vmTesting.vm.network "private_network", ip: "192.168.56.10"
-    vmTesting.vm.provider "virtualbox" do |vb|
-      vb.name = "Testing-Grupo-Codetech"
+  # Configuración de la máquina 'testing'
+  config.vm.define "testing" do |testing|
+    testing.vm.box = "ubuntu/jammy64"
+    testing.vm.hostname = "testing"
+    testing.vm.network "private_network", :name => '', ip: "192.168.56.4"
+    
+    # Comparto la carpeta del host donde estoy parado contra la VM
+    testing.vm.synced_folder 'compartido_testing/', '/home/vagrant/compartido', 
+      owner: 'vagrant', group: 'vagrant'
+
+    # Agregar la key privada de SSH
+    testing.ssh.insert_key = true
+
+    # Agregar discos extra
+    testing.vm.disk :disk, size: "5GB", name: "#{testing.vm.hostname}_extra_storage_1"
+    testing.vm.disk :disk, size: "3GB", name: "#{testing.vm.hostname}_extra_storage_2"
+    testing.vm.disk :disk, size: "2GB", name: "#{testing.vm.hostname}_extra_storage_3"
+    testing.vm.disk :disk, size: "1GB", name: "#{testing.vm.hostname}_extra_storage_4"
+
+    # Configuración del proveedor VirtualBox
+    testing.vm.provider "virtualbox" do |vb|
       vb.memory = "1024"
+      vb.name = "testing"
+      vb.cpus = 1
+      vb.linked_clone = true
+      vb.customize ['modifyvm', :id, '--graphicscontroller', 'vmsvga']      
+    end    
 
-      # Añadir discos a la máquina Testing
-      vb.customize ['createhd', '--filename', 'testing_disk5.vdi', '--size', 5120] # 5GB
-      vb.customize ['createhd', '--filename', 'testing_disk6.vdi', '--size', 3072] # 3GB
-      vb.customize ['createhd', '--filename', 'testing_disk7.vdi', '--size', 2048] # 2GB
-      vb.customize ['createhd', '--filename', 'testing_disk8.vdi', '--size', 1024] # 1GB
+    # Provisionamiento (comentado los scripts que no existen)
+    # testing.vm.provision "shell", path: "script_Enable_ssh_password.sh"
+    # testing.vm.provision "shell", path: "instala_paquetes.sh"
 
-      # Conectar los discos a la controladora de almacenamiento
-      (1..4).each do |i|
-        vb.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', i, '--device', 0, '--type', 'hdd', '--medium', "testing_disk#{i}.vdi"]
-      end
-    end
-    vmTesting.vm.provision "shell", inline: <<-SHELL
-      # Aquí puedes incluir scripts para configurar la máquina Testing
+    # Provisionamiento con comandos inline (sin privilegios)
+    config.vm.provision "shell", privileged: false, inline: <<-SHELL
+      # Los comandos se ejecutan como vagrant
+
+      mkdir -p /home/vagrant/repogit
+      cd /home/vagrant/repogit
     SHELL
   end
 
-  # Configuración de la máquina 'Produccion'
-  config.vm.define "Produccion" do |vmProduccion|
-    vmProduccion.vm.box = "ubuntu/jammy64"  # Usa la caja de Ubuntu
-    vmProduccion.vm.network "private_network", ip: "192.168.56.11"
-    vmProduccion.vm.provider "virtualbox" do |vb|
-      vb.name = "Produccion-Grupo-Codetech"
-      vb.memory = "1024"
+  # Configuración de la máquina 'produccion'
+  config.vm.define "produccion" do |produccion|
+    produccion.vm.box = "generic/rhel9"
+    produccion.vm.hostname = "produccion"
+    produccion.vm.network "private_network", :name => '', ip: "192.168.56.5"
+    
+    # Comparto la carpeta del host donde estoy parado contra la VM
+    produccion.vm.synced_folder 'compartido_produccion/', '/home/vagrant/compartido'
 
-      # Añadir discos a la máquina Produccion
-      vb.customize ['createhd', '--filename', 'produccion_disk5.vdi', '--size', 5120] # 5GB
-      vb.customize ['createhd', '--filename', 'produccion_disk6.vdi', '--size', 3072] # 3GB
-      vb.customize ['createhd', '--filename', 'produccion_disk7.vdi', '--size', 2048] # 2GB
-      vb.customize ['createhd', '--filename', 'produccion_disk8.vdi', '--size', 1024] # 1GB
+    # Agregar la key privada de SSH
+    produccion.ssh.insert_key = true
 
-      # Conectar los discos a la controladora de almacenamiento
-      (1..4).each do |i|
-        vb.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', i, '--device', 0, '--type', 'hdd', '--medium', "produccion_disk#{i}.vdi"]
-      end
+    # Provisionamiento (comentado los scripts que no existen)
+    # produccion.vm.provision "shell", path: "script_Enable_ssh_password.sh"
+
+    # Configuración del proveedor VirtualBox
+    produccion.vm.provider "virtualbox" do |vb2|
+      vb2.memory = "1024"
+      vb2.name = "produccion"
+      vb2.cpus = 1
+      vb2.linked_clone = true
+      vb2.customize ['modifyvm', :id, '--graphicscontroller', 'vmsvga']
     end
-    vmProduccion.vm.provision "shell", inline: <<-SHELL
-      # Aquí puedes incluir scripts para configurar la máquina Produccion
+
+    # Provisionamiento para instalar paquetes (sin los scripts mencionados)
+    produccion.vm.provision "shell", inline: <<-SHELL
+      sudo dnf install -y /home/vagrant/compartido/tree-1.8.0-10.el9.x86_64.rpm
+      subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms
+      dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
     SHELL
   end
-
 end
-
-
-
-
-
 

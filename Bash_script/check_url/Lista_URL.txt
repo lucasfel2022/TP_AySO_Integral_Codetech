@@ -1,0 +1,11 @@
+#################################
+#
+# Listado de URL a validar
+#
+#
+# Dominio   URL
+#################################
+google      www.google.com
+wikipedia   https://es.wikipedia.org/
+Github_Lucas    https://github.com/lucasfel2022
+Github_Milagros https://github.com/MilagrosBogliano

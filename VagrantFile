@@ -17,10 +17,10 @@ Vagrant.configure("2") do |config|
     testing.ssh.insert_key = true
 
     # Agregar discos extra
-    testing.vm.disk :disk, size: "5GB", name: "#{testing.vm.hostname}_extra_storage_1"
-    testing.vm.disk :disk, size: "3GB", name: "#{testing.vm.hostname}_extra_storage_2"
-    testing.vm.disk :disk, size: "2GB", name: "#{testing.vm.hostname}_extra_storage_3"
-    testing.vm.disk :disk, size: "1GB", name: "#{testing.vm.hostname}_extra_storage_4"
+    testing.vm.disk :disk, size: "5GB", name: "#{testing.vm.hostname}_extra_storage_7"
+    testing.vm.disk :disk, size: "3GB", name: "#{testing.vm.hostname}_extra_storage_8"
+    testing.vm.disk :disk, size: "2GB", name: "#{testing.vm.hostname}_extra_storage_9"
+    testing.vm.disk :disk, size: "1GB", name: "#{testing.vm.hostname}_extra_storage_10"
 
     # Configuración del proveedor VirtualBox
     testing.vm.provider "virtualbox" do |vb|

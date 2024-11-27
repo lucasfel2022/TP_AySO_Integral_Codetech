@@ -17,10 +17,10 @@ Vagrant.configure("2") do |config|
     testing.ssh.insert_key = true
 
     # Agregar discos extra
-    testing.vm.disk :disk, size: "5GB", name: "#{testing.vm.hostname}_extra_storage_7"
-    testing.vm.disk :disk, size: "3GB", name: "#{testing.vm.hostname}_extra_storage_8"
-    testing.vm.disk :disk, size: "2GB", name: "#{testing.vm.hostname}_extra_storage_9"
-    testing.vm.disk :disk, size: "1GB", name: "#{testing.vm.hostname}_extra_storage_10"
+    testing.vm.disk :disk, size: "5GB", name: "#{testing.vm.hostname}_extra_storage_1"
+    testing.vm.disk :disk, size: "3GB", name: "#{testing.vm.hostname}_extra_storage_2"
+    testing.vm.disk :disk, size: "2GB", name: "#{testing.vm.hostname}_extra_storage_3"
+    testing.vm.disk :disk, size: "1GB", name: "#{testing.vm.hostname}_extra_storage_4"
 
     # Configuración del proveedor VirtualBox
     testing.vm.provider "virtualbox" do |vb|
@@ -32,11 +32,11 @@ Vagrant.configure("2") do |config|
     end    
 
     # Provisionamiento (comentado los scripts que no existen)
-    # testing.vm.provision "shell", path: "script_Enable_ssh_password.sh"
-    # testing.vm.provision "shell", path: "instala_paquetes.sh"
+     #testing.vm.provision "shell", path: "script_Enable_ssh_password.sh"
+     #testing.vm.provision "shell", path: "instala_paquetes.sh"
 
     # Provisionamiento con comandos inline (sin privilegios)
-    config.vm.provision "shell", privileged: false, inline: <<-SHELL
+    config.vm.provision "shell", privileged: true, inline: <<-SHELL
       # Los comandos se ejecutan como vagrant
 
       mkdir -p /home/vagrant/repogit
@@ -57,7 +57,7 @@ Vagrant.configure("2") do |config|
     produccion.ssh.insert_key = true
 
     # Provisionamiento (comentado los scripts que no existen)
-    # produccion.vm.provision "shell", path: "script_Enable_ssh_password.sh"
+    #produccion.vm.provision "shell", path: "script_Enable_ssh_password.sh"
 
     # Configuración del proveedor VirtualBox
     produccion.vm.provider "virtualbox" do |vb2|

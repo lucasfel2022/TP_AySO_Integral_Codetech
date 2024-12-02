@@ -5,7 +5,7 @@ Vagrant.configure("2") do |config|
 
   # Configuración de la máquina 'testing'
   config.vm.define "testing" do |testing|
-    testing.vm.box = "ubuntu/jammy64"
+    testing.vm.box = "testing"
     testing.vm.hostname = "testing"
     testing.vm.network "private_network", :name => '', ip: "192.168.56.4"
     
@@ -17,10 +17,10 @@ Vagrant.configure("2") do |config|
     testing.ssh.insert_key = true
 
     # Agregar discos extra
-    testing.vm.disk :disk, size: "5GB", name: "#{testing.vm.hostname}_extra_storage_1"
-    testing.vm.disk :disk, size: "3GB", name: "#{testing.vm.hostname}_extra_storage_2"
-    testing.vm.disk :disk, size: "2GB", name: "#{testing.vm.hostname}_extra_storage_3"
-    testing.vm.disk :disk, size: "1GB", name: "#{testing.vm.hostname}_extra_storage_4"
+    testing.vm.disk :disk, size: "5GB", name: "#{testing.vm.hostname}_extra_storage_5"
+    testing.vm.disk :disk, size: "3GB", name: "#{testing.vm.hostname}_extra_storage_6"
+    testing.vm.disk :disk, size: "2GB", name: "#{testing.vm.hostname}_extra_storage_7"
+    testing.vm.disk :disk, size: "1GB", name: "#{testing.vm.hostname}_extra_storage_8"
 
     # Configuración del proveedor VirtualBox
     testing.vm.provider "virtualbox" do |vb|
@@ -36,7 +36,7 @@ Vagrant.configure("2") do |config|
      #testing.vm.provision "shell", path: "instala_paquetes.sh"
 
     # Provisionamiento con comandos inline (sin privilegios)
-    config.vm.provision "shell", privileged: true, inline: <<-SHELL
+    config.vm.provision "shell", privileged: false, inline: <<-SHELL
       # Los comandos se ejecutan como vagrant
 
       mkdir -p /home/vagrant/repogit
